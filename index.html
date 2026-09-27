@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitaScale — Free BMI Calculator with WHO &amp; Asian Cutoffs, History &amp; Trend</title>
+<meta name="description" content="VitaScale is a free BMI calculator with metric &amp; imperial inputs, WHO and Asia-Pacific BMI cutoffs toggle, healthy weight range, and a personal BMI history tracker with trend chart. No signup, unlimited free usage.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: {
+      vitabg: '#F0FDF9',
+      vitaprimary: '#0D9488',
+      vitaprimarydark: '#0B7C73',
+      vitaaccent: '#F59E0B',
+      vitaaccentdark: '#D97706',
+      vitafoam: '#CCFBF1'
+    },
+    fontFamily: { sans: ['Inter','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'] }
+  } }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .card { background:#fff; border-radius:1.25rem; box-shadow:0 10px 30px -12px rgba(13,148,136,.25); border:1px solid #D7F3EC; }
+  .segbtn { transition: all .18s ease; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type=number] { -moz-appearance:textfield; appearance:textfield; }
+  .faq-body { display:none; }
+  .faq-item.open .faq-body { display:block; }
+  .faq-item.open .faq-chev { transform:rotate(180deg); }
+  .faq-chev { transition: transform .2s ease; }
+  #bmiMarker { transition: left .6s cubic-bezier(.34,1.4,.64,1); }
+  .no-print {}
+</style>
+</head>
+<body id="top" class="bg-vitabg text-slate-800 antialiased">
+
+<!-- ===== STICKY HEADER ===== -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-teal-100 shadow-sm">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2" aria-label="VitaScale home">
+      <span class="inline-flex items-center justify-center w-9 h-9 rounded-2xl bg-vitaprimary text-white font-extrabold text-lg shadow-md" aria-hidden="true">VS</span>
+      <span class="text-xl font-extrabold tracking-tight text-vitaprimary">VitaScale</span>
+    </a>
+    <nav class="flex items-center gap-4 sm:gap-6 text-sm font-semibold">
+      <a href="#top" class="text-slate-600 hover:text-vitaprimary transition">Home</a>
+      <a href="https://fixoraa.tech" class="text-slate-600 hover:text-vitaprimary transition">More Tools</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== TOP AD (verbatim) ===== -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="mx-auto max-w-6xl px-4 sm:px-6 pt-8 pb-4 text-center">
+  <div class="inline-flex items-center gap-2 rounded-full bg-vitafoam border border-teal-200 px-4 py-1.5 text-sm font-bold text-vitaprimarydark mb-4">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+    Unlimited Free Usage
+  </div>
+  <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900">Free <span class="text-vitaprimary">BMI Calculator</span></h1>
+  <p class="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">Check your Body Mass Index in seconds with metric or imperial units, WHO &amp; Asia-Pacific cutoffs, your healthy weight range, and a personal history trend. No signup, no paywall — your data never leaves your browser.</p>
+</section>
+<!-- ===== TOOL ===== -->
+<main class="mx-auto max-w-6xl px-4 sm:px-6 py-6">
+  <div class="grid gap-6 lg:grid-cols-5">
+
+    <!-- INPUT CARD -->
+    <section class="card lg:col-span-2 p-6 sm:p-8" aria-label="BMI inputs">
+      <h2 class="text-xl font-extrabold text-slate-900 mb-1">Your measurements</h2>
+      <p class="text-sm text-slate-500 mb-5">Enter your height and weight. Everything is calculated instantly in your browser.</p>
+
+      <!-- Units -->
+      <div class="mb-5">
+        <span class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Units</span>
+        <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-vitabg border border-teal-100" role="group" aria-label="Unit system">
+          <button id="unitMetric" type="button" class="segbtn rounded-lg px-3 py-2 text-sm font-bold bg-vitaprimary text-white shadow">Metric (kg, cm)</button>
+          <button id="unitImperial" type="button" class="segbtn rounded-lg px-3 py-2 text-sm font-bold text-slate-500">Imperial (lb, ft/in)</button>
+        </div>
+      </div>
+
+      <!-- Metric inputs -->
+      <div id="metricFields" class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="heightCm" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Height (cm)</label>
+          <input id="heightCm" type="number" inputmode="decimal" min="50" max="300" placeholder="e.g. 170"
+            class="w-full rounded-xl border-2 border-teal-100 bg-vitabg px-4 py-3 text-lg font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-vitaprimary focus:bg-white">
+        </div>
+        <div>
+          <label for="weightKg" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Weight (kg)</label>
+          <input id="weightKg" type="number" inputmode="decimal" min="10" max="500" placeholder="e.g. 68"
+            class="w-full rounded-xl border-2 border-teal-100 bg-vitabg px-4 py-3 text-lg font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-vitaprimary focus:bg-white">
+        </div>
+      </div>
+
+      <!-- Imperial inputs -->
+      <div id="imperialFields" class="hidden grid grid-cols-3 gap-3">
+        <div>
+          <label for="heightFt" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Feet</label>
+          <input id="heightFt" type="number" inputmode="numeric" min="1" max="9" placeholder="5"
+            class="w-full rounded-xl border-2 border-teal-100 bg-vitabg px-4 py-3 text-lg font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-vitaprimary focus:bg-white">
+        </div>
+        <div>
+          <label for="heightIn" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Inches</label>
+          <input id="heightIn" type="number" inputmode="decimal" min="0" max="11.9" placeholder="9"
+            class="w-full rounded-xl border-2 border-teal-100 bg-vitabg px-4 py-3 text-lg font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-vitaprimary focus:bg-white">
+        </div>
+        <div>
+          <label for="weightLb" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Pounds</label>
+          <input id="weightLb" type="number" inputmode="decimal" min="20" max="1100" placeholder="150"
+            class="w-full rounded-xl border-2 border-teal-100 bg-vitabg px-4 py-3 text-lg font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-vitaprimary focus:bg-white">
+        </div>
+      </div>
+
+      <p id="inputError" class="hidden mt-3 text-sm font-semibold text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2" role="alert"></p>
+
+      <!-- BMI scale toggle -->
+      <div class="mt-6">
+        <span class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">BMI reference scale</span>
+        <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-vitabg border border-teal-100" role="group" aria-label="BMI cutoff scale">
+          <button id="scaleAsia" type="button" class="segbtn rounded-lg px-3 py-2 text-sm font-bold bg-vitaaccent text-white shadow">Asian (WHO Asia-Pacific)</button>
+          <button id="scaleStd" type="button" class="segbtn rounded-lg px-3 py-2 text-sm font-bold text-slate-500">Standard WHO</button>
+        </div>
+        <p class="mt-2 text-xs text-slate-500 leading-relaxed">Asian populations carry higher metabolic risk at lower BMI. The Asia-Pacific scale flags overweight from <strong>23</strong> and obesity from <strong>25</strong> — recommended by India's health bodies.</p>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button id="calcBtn" type="button" class="flex-1 min-w-[160px] rounded-xl bg-vitaprimary hover:bg-vitaprimarydark text-white font-extrabold text-lg px-6 py-3.5 shadow-lg shadow-teal-200 transition active:scale-[.98]">Calculate BMI</button>
+        <button id="resetBtn" type="button" class="rounded-xl border-2 border-teal-200 text-vitaprimarydark font-bold px-5 py-3.5 hover:bg-vitafoam transition">Reset</button>
+      </div>
+    </section>
+
+    <!-- RESULTS CARD -->
+    <section class="card lg:col-span-3 p-6 sm:p-8" aria-label="BMI results" aria-live="polite">
+      <h2 class="text-xl font-extrabold text-slate-900 mb-1">Your result</h2>
+      <p class="text-sm text-slate-500 mb-5">Press <strong>Calculate BMI</strong> to see your score, category and healthy range.</p>
+
+      <div id="resultEmpty" class="rounded-2xl bg-vitabg border-2 border-dashed border-teal-200 p-8 text-center text-slate-400 font-semibold">
+        Your BMI will appear here after you enter your height and weight.
+      </div>
+
+      <div id="resultBox" class="hidden">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="rounded-2xl bg-vitabg border border-teal-100 px-6 py-4 text-center">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Your BMI</div>
+            <div id="bmiValue" class="text-5xl font-extrabold text-vitaprimary leading-none mt-1">–</div>
+            <div class="text-xs text-slate-400 mt-1">kg/m²</div>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <div id="bmiCategory" class="inline-block rounded-full px-4 py-1.5 text-sm font-extrabold text-white bg-slate-400">–</div>
+            <p id="bmiAdvice" class="mt-2 text-sm text-slate-600 leading-relaxed">–</p>
+          </div>
+        </div>
+
+        <!-- Gauge -->
+        <div class="mt-6">
+          <div class="flex justify-between text-[11px] font-bold text-slate-500 mb-1"><span>12</span><span id="gaugeMid" class="text-slate-400">Normal range</span><span>40</span></div>
+          <div class="relative h-5 rounded-full overflow-hidden" id="gaugeBar" style="background:linear-gradient(90deg,#38bdf8 0%,#34d399 24%,#facc15 42%,#fb923c 62%,#ef4444 82%)">
+            <div id="bmiMarker" class="absolute top-[-4px] w-1.5 h-7 bg-slate-900 rounded-full shadow" style="left:0%"></div>
+          </div>
+          <div class="flex justify-between mt-1.5 text-[11px] font-semibold text-slate-400">
+            <span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span>
+          </div>
+        </div>
+
+        <!-- Scale comparison -->
+        <div class="mt-6 grid sm:grid-cols-2 gap-4">
+          <div class="rounded-2xl bg-vitabg border border-teal-100 p-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Asia-Pacific verdict</div>
+            <div id="catAsia" class="font-extrabold text-slate-900">–</div>
+          </div>
+          <div class="rounded-2xl bg-vitabg border border-teal-100 p-4">
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Standard WHO verdict</div>
+            <div id="catStd" class="font-extrabold text-slate-900">–</div>
+          </div>
+        </div>
+
+        <!-- Healthy range -->
+        <div class="mt-4 rounded-2xl bg-amber-50 border border-amber-200 p-4">
+          <div class="text-xs font-bold uppercase tracking-wider text-vitaaccentdark mb-1">Healthy weight range for your height</div>
+          <div id="healthyRange" class="text-lg font-extrabold text-slate-900">–</div>
+          <div id="gainLose" class="mt-1 text-sm font-semibold text-slate-600">–</div>
+        </div>
+
+        <p class="mt-4 text-[11px] text-slate-400 leading-relaxed">BMI is a screening tool, not a diagnosis. It does not account for muscle mass, bone density or body fat distribution. If you have health concerns, please consult a qualified health professional.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- HISTORY CARD -->
+  <section class="card mt-6 p-6 sm:p-8" aria-label="BMI history">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-1">
+      <div>
+        <h2 class="text-xl font-extrabold text-slate-900">Your BMI history</h2>
+        <p class="text-sm text-slate-500">Saved privately in this browser — never uploaded anywhere.</p>
+      </div>
+      <div class="flex gap-2">
+        <button id="csvBtn" type="button" class="rounded-xl border-2 border-teal-200 text-vitaprimarydark text-sm font-bold px-4 py-2 hover:bg-vitafoam transition">Download CSV</button>
+        <button id="clearBtn" type="button" class="rounded-xl border-2 border-red-200 text-red-600 text-sm font-bold px-4 py-2 hover:bg-red-50 transition">Clear history</button>
+      </div>
+    </div>
+    <div class="grid gap-6 lg:grid-cols-2 mt-4">
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">Trend (last 14 entries)</h3>
+        <div class="rounded-2xl bg-vitabg border border-teal-100 p-3">
+          <svg id="sparkline" viewBox="0 0 600 160" class="w-full h-36" role="img" aria-label="BMI trend chart"></svg>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">Recent entries</h3>
+        <div id="historyEmpty" class="rounded-2xl bg-vitabg border-2 border-dashed border-teal-200 p-6 text-center text-sm text-slate-400 font-semibold">No entries yet. Calculate your BMI and it will be saved here automatically.</div>
+        <div class="overflow-x-auto">
+          <table id="historyTable" class="hidden w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs uppercase tracking-wider text-slate-400 border-b border-teal-100">
+                <th class="py-2 pr-3 font-bold">Date</th><th class="py-2 pr-3 font-bold">BMI</th><th class="py-2 pr-3 font-bold">Category</th><th class="py-2 font-bold">Scale</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===== BOTTOM AD (verbatim) ===== -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="464498"></script>
+    </div>
+  </div>
+</div>
+<!-- ===== SEO ARTICLE ===== -->
+<article id="seo-article" class="mx-auto max-w-6xl px-4 sm:px-6 pb-10">
+  <div class="card p-6 sm:p-10 prose-none">
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-4">BMI Calculator: Understanding Your Body Mass Index, the Healthy Weight Range, and Why the Right Cutoffs Matter</h2>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">What is BMI?</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">Body Mass Index, universally known as BMI, is the world's most widely used screening measure for weight-related health risk. It reduces two simple measurements — your weight and your height — to a single number that tells you whether you are likely underweight, at a healthy weight, overweight, or obese. Doctors, insurers, researchers, and public-health agencies across the globe use BMI because it is fast, inexpensive, and requires no special equipment: just a weighing scale, a measuring tape, and thirty seconds of arithmetic.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">The formula behind BMI is elegantly simple. In metric units, you divide your weight in kilograms by the square of your height in meters. A person who weighs 70 kilograms and stands 1.75 meters tall has a BMI of 70 divided by 3.06, which is approximately 22.9. In imperial units the same result comes from multiplying weight in pounds by 703 and dividing by the square of height in inches. Both formulas give the same answer, because the 703 factor is simply the conversion constant that makes pounds and inches equivalent to kilograms and meters. VitaScale performs these conversions automatically, so you can type in whichever units feel natural and get an identical, correct result.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">BMI was invented in the 1830s by the Belgian statistician Adolphe Quetelet, who was studying the "average man" and wanted a way to compare body size across populations. It became a mainstream health metric in the 1970s, when researcher Ancel Keys demonstrated that the Quetelet index predicted body fat and health outcomes better than the height-weight tables of the era. Today, the World Health Organization uses BMI cutoffs to define overweight and obesity for surveillance, clinical guidelines reference it constantly, and most people first meet the number on a doctor's report or a fitness app.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">How to calculate your BMI step by step</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">Using VitaScale could not be easier. First, choose your unit system: metric (kilograms and centimeters) or imperial (pounds, feet and inches). If you select imperial, enter your height as feet plus remaining inches — for example, 5 feet 9 inches — and your weight in pounds. The calculator converts everything behind the scenes to the standard formula. Second, type your current weight, measured ideally in the morning, in light clothing, on the same scale each time for consistency. Third, type your height without shoes, standing straight against a wall if you have not measured recently. Press Calculate BMI, and your score appears instantly alongside a visual gauge showing exactly where you sit on the spectrum from underweight to obese.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">A worked example makes the arithmetic concrete. Take a woman who is 162 centimeters tall and weighs 65 kilograms. Her height in meters is 1.62, squared that is 2.6244, and 65 divided by 2.6244 equals 24.8. On the standard WHO scale that is the very top of the normal range. On the Asia-Pacific scale, however, 24.8 falls in the overweight band. This single example illustrates why the cutoff toggle on VitaScale exists: the same body produces the same number, but the interpretation — and the health guidance that follows — changes with the scale you read it against.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">BMI categories: the standard WHO scale</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">The World Health Organization's standard classification, used for international comparison, divides adult BMI into clear bands. A BMI below 18.5 is classified as underweight. From 18.5 up to 24.9 is the normal or healthy range — the zone associated with the lowest risk of weight-related disease in the general population. From 25.0 to 29.9 is overweight, and 30.0 and above is obese, further subdivided into Class I (30.0–34.9), Class II (35.0–39.9), and Class III (40.0 and above). These thresholds were derived from large studies linking BMI to mortality and disease in predominantly Western populations.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">Each band carries a different message. Underweight can signal inadequate nutrition, underlying illness, or excessive energy expenditure, and is linked to weakened immunity, bone loss, and fertility issues. The normal range is the maintenance target: keep doing what works. Overweight is the early-warning zone where lifestyle adjustments — modest calorie reduction, regular brisk walking, better sleep — deliver the biggest return on effort. Obesity bands mark progressively higher risk for type 2 diabetes, hypertension, heart disease, sleep apnea, and certain cancers, and generally warrant a conversation with a clinician rather than a solo crash diet.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">Why Asian populations need different cutoffs</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">Here is the detail most online calculators ignore. Research over the past three decades has consistently shown that people of Asian ancestry — including Indians, Pakistanis, Bangladeshis, Sri Lankans, Chinese, and Southeast Asians — tend to carry more body fat, and critically more visceral fat around the internal organs, at the same BMI as people of European ancestry. Visceral fat is the metabolically dangerous kind: it drives insulin resistance and inflammation. As a result, South Asians begin developing type 2 diabetes, hypertension, and cardiovascular disease at BMI values that the standard scale calls perfectly normal.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">The World Health Organization responded in 2000 with the Asia-Pacific perspective on obesity, and in 2004 a WHO expert consultation confirmed lower cutoffs for Asian populations. Under the Asia-Pacific scale, the healthy range is 18.5 to 22.9, overweight begins at 23.0, and obesity begins at 25.0, with action points at 23 for increased risk and 27.5 for high risk. India's own medical bodies, including the Indian Council of Medical Research, have adopted these thresholds. This is why a BMI of 24 tells two different stories: on the global scale it is the last number of "normal," while on the Asia-Pacific scale it is firmly overweight — and for an Indian adult, the second reading is the medically honest one.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">Most BMI calculators on the internet were built for a Western audience and only show the standard scale. An Indian user with a BMI of 24.5 gets a reassuring green "Normal" from such tools, when their actual metabolic risk is already elevated. VitaScale is different: it defaults to the Asia-Pacific scale, lets you toggle to the standard WHO scale for comparison, and shows both verdicts side by side so you can see exactly where the two systems agree and where they diverge. If you are of Asian or South Asian descent — anywhere in the world — this toggle is arguably the most important feature of any BMI calculator you will use.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">Your healthy weight range — and how far you are from it</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">A BMI number on its own is abstract; a weight range is actionable. VitaScale translates the healthy BMI band back into kilograms for your exact height. The healthy range is calculated from the formula weight equals BMI times height squared, using 18.5 as the lower bound and the top of the normal band — 22.9 on the Asia-Pacific scale or 24.9 on the standard scale — as the upper bound. For a 170-centimeter person on the Asia-Pacific scale, that works out to roughly 53.5 to 66.2 kilograms. On the standard scale the same height gives 53.5 to 72.0 kilograms.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">The calculator goes one step further and tells you the gap: how many kilograms you would need to lose to enter the healthy band, or how many you would need to gain if you are underweight. This turns a vague "you should lose weight" into a concrete number you can plan around — ideally at a steady, sustainable pace of about half a kilogram per week, which doctors generally consider the safe rate for fat loss. Remember that the number is a destination, not a deadline; arriving there through crash dieting and arriving there through lasting habits produce very different health outcomes.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">Tracking your BMI over time</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">A single BMI reading is a snapshot; a series of readings is a story. Weight fluctuates daily with hydration, meals, and hormones, so trends matter far more than any one measurement. VitaScale saves every calculation to your browser's private local storage — no account, no server, no data ever leaving your device — and draws a trend sparkline of your last fourteen entries. Watching the line slope gently downward over months is far more motivating than fixating on today's number, and a sudden unexplained swing is an early signal worth paying attention to.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">For best results, weigh yourself under consistent conditions: same time of day (mornings are standard), similar clothing, the same scale, on a hard flat floor. Logging once a week is plenty for most people; daily weighing can be useful data but should never drive daily emotions. If you switch devices or want to analyze your history in a spreadsheet, the one-click CSV download exports your full log with dates, BMI values, categories, and the scale used.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">The honest limitations of BMI</h3>
+    <p class="text-slate-600 leading-relaxed mb-4">No guide to BMI would be complete without its caveats. BMI cannot distinguish muscle from fat, so a muscular athlete can register as overweight or even obese while carrying very little body fat. It says nothing about fat distribution — and abdominal fat is far more dangerous than fat on the hips and thighs, which is why many clinicians pair BMI with a waist measurement or the waist-to-height ratio. BMI was validated in adults and applies poorly to children and teenagers, whose growing bodies need age-and-sex-specific growth charts instead. Pregnancy changes everything about weight interpretation, and in older adults, a slightly higher BMI is sometimes associated with better outcomes because it reflects preserved muscle and nutritional reserve.</p>
+    <p class="text-slate-600 leading-relaxed mb-4">Think of BMI as a smoke detector, not a diagnosis. A reading outside the healthy range is a prompt to look closer — at your diet, activity, sleep, waistline, blood pressure, and blood sugar — ideally with a clinician who can see the full picture. A reading inside the range is reassurance, not a license to ignore those same factors. Used with that humility, BMI remains one of the most useful thirty-second health checks ever devised.</p>
+
+    <h3 class="text-xl font-bold text-vitaprimarydark mt-8 mb-3">Frequently asked questions</h3>
+    <div class="space-y-3" id="faqs">
+      <div class="faq-item rounded-2xl border border-teal-100 bg-vitabg overflow-hidden">
+        <button type="button" class="faq-toggle w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-bold text-slate-800" aria-expanded="false">What is a good BMI for an Indian adult?<svg class="faq-chev shrink-0 text-vitaprimary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-body px-5 pb-5 text-sm text-slate-600 leading-relaxed">For Indian and other South Asian adults, health authorities recommend the WHO Asia-Pacific cutoffs: a healthy BMI is 18.5 to 22.9, overweight starts at 23, and obesity starts at 25. These lower thresholds reflect the higher visceral fat and earlier metabolic risk seen in Asian populations. VitaScale applies this scale by default and lets you compare with the standard WHO scale.</div>
+      </div>
+      <div class="faq-item rounded-2xl border border-teal-100 bg-vitabg overflow-hidden">
+        <button type="button" class="faq-toggle w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-bold text-slate-800" aria-expanded="false">How is BMI calculated in kg and cm?<svg class="faq-chev shrink-0 text-vitaprimary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-body px-5 pb-5 text-sm text-slate-600 leading-relaxed">Divide your weight in kilograms by your height in meters squared. For example, 68 kg at 1.70 m gives 68 ÷ (1.70 × 1.70) = 23.5. If your height is in centimeters, divide by 100 first. VitaScale does this math instantly, and also supports pounds, feet, and inches with automatic conversion.</div>
+      </div>
+      <div class="faq-item rounded-2xl border border-teal-100 bg-vitabg overflow-hidden">
+        <button type="button" class="faq-toggle w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-bold text-slate-800" aria-expanded="false">Is BMI accurate for muscular people?<svg class="faq-chev shrink-0 text-vitaprimary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-body px-5 pb-5 text-sm text-slate-600 leading-relaxed">Not entirely. BMI cannot tell muscle from fat, so athletes and very muscular people can score as overweight or obese while being lean and healthy. For such individuals, body-fat percentage, waist circumference, or a DEXA scan gives a truer picture. BMI is best viewed as a population-level screening tool, not a personal body-composition test.</div>
+      </div>
+      <div class="faq-item rounded-2xl border border-teal-100 bg-vitabg overflow-hidden">
+        <button type="button" class="faq-toggle w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-bold text-slate-800" aria-expanded="false">What is the difference between the Asia-Pacific and standard WHO BMI scales?<svg class="faq-chev shrink-0 text-vitaprimary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-body px-5 pb-5 text-sm text-slate-600 leading-relaxed">The standard WHO scale calls 18.5–24.9 normal, 25–29.9 overweight, and 30+ obese. The WHO Asia-Pacific scale, designed for Asian populations, calls 18.5–22.9 normal, 23–24.9 overweight, and 25+ obese. A BMI of 24 is normal on one and overweight on the other — VitaScale shows you both verdicts side by side.</div>
+      </div>
+      <div class="faq-item rounded-2xl border border-teal-100 bg-vitabg overflow-hidden">
+        <button type="button" class="faq-toggle w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-bold text-slate-800" aria-expanded="false">How often should I check my BMI?<svg class="faq-chev shrink-0 text-vitaprimary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-body px-5 pb-5 text-sm text-slate-600 leading-relaxed">Once a week under consistent conditions — same time of day, similar clothing, same scale — is ideal for tracking trends. Daily readings fluctuate with water and food and can be misleading. Save each reading in VitaScale's history to watch your trend line over weeks and months instead of reacting to single days.</div>
+      </div>
+      <div class="faq-item rounded-2xl border border-teal-100 bg-vitabg overflow-hidden">
+        <button type="button" class="faq-toggle w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-bold text-slate-800" aria-expanded="false">Is my data private on VitaScale?<svg class="faq-chev shrink-0 text-vitaprimary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-body px-5 pb-5 text-sm text-slate-600 leading-relaxed">Yes. All calculations happen in your browser and your history is stored only in your device's local storage. Nothing is sent to any server, there is no account to create, and clearing your history removes it permanently. VitaScale is free forever with no signup and no watermark.</div>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-teal-100 bg-white/60">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-vitaprimary text-white font-extrabold text-sm" aria-hidden="true">VS</span>
+      <span class="font-extrabold text-vitaprimary">VitaScale</span>
+      <span class="text-sm text-slate-400">— free health tools, forever.</span>
+    </div>
+    <nav class="flex items-center gap-5 text-sm font-semibold text-slate-500">
+      <a href="#top" class="hover:text-vitaprimary transition">Home</a>
+      <a href="https://fixoraa.tech" class="hover:text-vitaprimary transition">More Tools</a>
+    </nav>
+  </div>
+  <div class="pb-6 text-center text-[11px] text-slate-400">For general information only — not medical advice. Consult a health professional for personal guidance.</div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "What is a good BMI for an Indian adult?", "acceptedAnswer": {"@type": "Answer", "text": "For Indian and other South Asian adults, health authorities recommend the WHO Asia-Pacific cutoffs: a healthy BMI is 18.5 to 22.9, overweight starts at 23, and obesity starts at 25."}},
+    {"@type": "Question", "name": "How is BMI calculated in kg and cm?", "acceptedAnswer": {"@type": "Answer", "text": "Divide your weight in kilograms by your height in meters squared. For example, 68 kg at 1.70 m gives 68 / (1.70 x 1.70) = 23.5."}},
+    {"@type": "Question", "name": "Is BMI accurate for muscular people?", "acceptedAnswer": {"@type": "Answer", "text": "Not entirely. BMI cannot tell muscle from fat, so muscular people can score as overweight while being lean. Body-fat percentage or waist measurement gives a truer picture."}},
+    {"@type": "Question", "name": "What is the difference between the Asia-Pacific and standard WHO BMI scales?", "acceptedAnswer": {"@type": "Answer", "text": "The standard WHO scale calls 18.5-24.9 normal and 30+ obese; the Asia-Pacific scale calls 18.5-22.9 normal and 25+ obese, reflecting higher metabolic risk at lower BMI in Asian populations."}},
+    {"@type": "Question", "name": "How often should I check my BMI?", "acceptedAnswer": {"@type": "Answer", "text": "Once a week under consistent conditions is ideal for tracking trends. Daily readings fluctuate with water and food intake."}},
+    {"@type": "Question", "name": "Is my data private on VitaScale?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. All calculations happen in your browser and history is stored only in your device's local storage. Nothing is sent to any server."}}
+  ]
+}
+</script>
+<script>
+/*__PURE_START__*/
+// ===== VitaScale pure logic (DOM-free, tested in Node) =====
+'use strict';
+
+const SCALES = {
+  standard: {
+    name: 'Standard WHO',
+    bands: [
+      { min: 0,    max: 18.5, label: 'Underweight',   color: '#38BDF8', advice: 'Below the healthy range. Focus on nutrient-dense foods and consider speaking with a health professional about safe, steady weight gain.' },
+      { min: 18.5, max: 25,   label: 'Normal',        color: '#10B981', advice: 'In the healthy range. Keep up balanced nutrition, regular movement, and good sleep to maintain it.' },
+      { min: 25,   max: 30,   label: 'Overweight',    color: '#F59E0B', advice: 'Above the healthy range. Small, consistent changes — portion awareness and daily activity — make the biggest difference here.' },
+      { min: 30,   max: 35,   label: 'Obese Class I', color: '#F97316', advice: 'Well above the healthy range. A structured plan with a clinician or dietitian is the safest next step.' },
+      { min: 35,   max: 40,   label: 'Obese Class II',color: '#EF4444', advice: 'Well above the healthy range. Please consult a qualified health professional for a supervised plan.' },
+      { min: 40,   max: 99,   label: 'Obese Class III',color:'#B91C1C', advice: 'Well above the healthy range. Please consult a qualified health professional for a supervised plan.' }
+    ],
+    healthyMin: 18.5, healthyMax: 24.9
+  },
+  asia: {
+    name: 'Asia-Pacific',
+    bands: [
+      { min: 0,    max: 18.5, label: 'Underweight',   color: '#38BDF8', advice: 'Below the healthy range. Focus on nutrient-dense foods and consider speaking with a health professional about safe, steady weight gain.' },
+      { min: 18.5, max: 23,   label: 'Normal',        color: '#10B981', advice: 'In the healthy range for Asian adults. Keep up balanced nutrition, regular movement, and good sleep to maintain it.' },
+      { min: 23,   max: 25,   label: 'Overweight',    color: '#F59E0B', advice: 'Above the Asia-Pacific healthy range — metabolic risk rises from 23 in Asian adults. Small, consistent lifestyle changes help most here.' },
+      { min: 25,   max: 30,   label: 'Obese Class I', color: '#F97316', advice: 'Obese on the Asia-Pacific scale. A structured plan with a clinician or dietitian is the safest next step.' },
+      { min: 30,   max: 99,   label: 'Obese Class II',color: '#EF4444', advice: 'Obese on the Asia-Pacific scale. Please consult a qualified health professional for a supervised plan.' }
+    ],
+    healthyMin: 18.5, healthyMax: 22.9
+  }
+};
+
+function calcBMI(weightKg, heightCm) {
+  if (!isFinite(weightKg) || !isFinite(heightCm) || weightKg <= 0 || heightCm <= 0) return NaN;
+  const hM = heightCm / 100;
+  return weightKg / (hM * hM);
+}
+
+function classifyBMI(bmi, scaleKey) {
+  const scale = SCALES[scaleKey] || SCALES.standard;
+  if (!isFinite(bmi) || bmi <= 0) return null;
+  for (const b of scale.bands) {
+    if (bmi >= b.min && bmi < b.max) return { label: b.label, color: b.color, advice: b.advice, scale: scale.name };
+  }
+  return null;
+}
+
+function healthyWeightRange(heightCm, scaleKey) {
+  const scale = SCALES[scaleKey] || SCALES.standard;
+  if (!isFinite(heightCm) || heightCm <= 0) return null;
+  const hM = heightCm / 100;
+  return { min: scale.healthyMin * hM * hM, max: scale.healthyMax * hM * hM, minBMI: scale.healthyMin, maxBMI: scale.healthyMax };
+}
+
+function weightGap(weightKg, heightCm, scaleKey) {
+  const range = healthyWeightRange(heightCm, scaleKey);
+  if (!range || !isFinite(weightKg) || weightKg <= 0) return null;
+  const eps = 0.05;
+  if (weightKg < range.min - eps) return { direction: 'gain', kg: range.min - weightKg };
+  if (weightKg > range.max + eps) return { direction: 'lose', kg: weightKg - range.max };
+  return { direction: 'maintain', kg: 0 };
+}
+
+function imperialToMetric(feet, inches, pounds) {
+  const totalIn = (isFinite(feet) ? feet : 0) * 12 + (isFinite(inches) ? inches : 0);
+  return {
+    heightCm: totalIn * 2.54,
+    weightKg: (isFinite(pounds) ? pounds : 0) * 0.45359237
+  };
+}
+
+function validateInputs(weightKg, heightCm) {
+  if (!isFinite(weightKg) || !isFinite(heightCm)) return 'Please enter your height and weight to calculate.';
+  if (weightKg <= 0 || heightCm <= 0) return 'Height and weight must be positive numbers.';
+  if (heightCm < 50 || heightCm > 300) return 'Height looks out of range (50–300 cm). Please check your entry.';
+  if (weightKg < 10 || weightKg > 500) return 'Weight looks out of range (10–500 kg). Please check your entry.';
+  return '';
+}
+
+function gaugePercent(bmi, lo, hi) {
+  const l = lo === undefined ? 12 : lo, h = hi === undefined ? 40 : hi;
+  if (!isFinite(bmi)) return 0;
+  return Math.max(0, Math.min(100, ((bmi - l) / (h - l)) * 100));
+}
+
+// Sparkline: pure function -> SVG inner markup for bmi values
+function sparklineMarkup(values, w, h) {
+  w = w || 600; h = h || 160;
+  const pad = 18;
+  if (!values || values.length === 0) {
+    return '<text x="' + (w/2) + '" y="' + (h/2) + '" text-anchor="middle" fill="#94a3b8" font-size="16" font-weight="600">No data yet</text>';
+  }
+  const vals = values.slice(-14);
+  let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if (hi - lo < 2) { lo -= 1; hi += 1; }
+  const n = vals.length;
+  const x = i => n === 1 ? w/2 : pad + (i * (w - 2*pad)) / (n - 1);
+  const y = v => pad + (1 - (v - lo) / (hi - lo)) * (h - 2*pad);
+  const pts = vals.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  const area = pad + ',' + (h-pad) + ' ' + pts + ' ' + (w-pad) + ',' + (h-pad);
+  const dots = vals.map((v, i) => '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="5" fill="#0D9488" stroke="#fff" stroke-width="2.5"/>').join('');
+  const labels = '<text x="' + pad + '" y="' + (pad - 4) + '" fill="#64748b" font-size="13" font-weight="700">' + hi.toFixed(1) + '</text>' +
+                 '<text x="' + pad + '" y="' + (h - 4) + '" fill="#64748b" font-size="13" font-weight="700">' + lo.toFixed(1) + '</text>';
+  return labels + '<polygon points="' + area + '" fill="#0D9488" opacity="0.12"/>' +
+         '<polyline points="' + pts + '" fill="none" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>' + dots;
+}
+
+function historyToCSV(entries) {
+  const esc = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const rows = ['Date,BMI,Weight (kg),Height (cm),Category,Scale'];
+  entries.forEach(e => rows.push([e.date, e.bmi.toFixed(1), e.weightKg.toFixed(1), e.heightCm.toFixed(1), esc(e.category), esc(e.scaleName)].join(',')));
+  return rows.join('\n');
+}
+
+function addHistoryEntry(entries, entry, max) {
+  const list = (entries || []).slice();
+  list.unshift(entry);
+  return list.slice(0, max || 50);
+}
+
+function formatDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch (e) { return iso; }
+}
+/*__PURE_END__*/
+// ===== VitaScale UI wiring (DOM) =====
+(function () {
+  const $ = id => document.getElementById(id);
+  const LS_KEY = 'vitascale-history-v1';
+  let unitSystem = 'metric';
+  let scaleKey = 'asia';
+
+  const segActive = ['bg-vitaprimary', 'text-white', 'shadow'];
+  const segActiveAmber = ['bg-vitaaccent', 'text-white', 'shadow'];
+  const segIdle = ['text-slate-500'];
+
+  function paintSeg(btn, active, amber) {
+    const on = amber ? segActiveAmber : segActive;
+    btn.classList.remove(...segActive, ...segActiveAmber, ...segIdle);
+    btn.classList.add(...(active ? on : segIdle));
+  }
+
+  function setUnits(u) {
+    unitSystem = u;
+    paintSeg($('unitMetric'), u === 'metric', false);
+    paintSeg($('unitImperial'), u === 'imperial', false);
+    $('metricFields').classList.toggle('hidden', u !== 'metric');
+    $('metricFields').classList.toggle('grid', u === 'metric');
+    $('imperialFields').classList.toggle('hidden', u !== 'imperial');
+    $('imperialFields').classList.toggle('grid', u === 'imperial');
+    hideError();
+    calculate(false);
+  }
+
+  function setScale(s) {
+    scaleKey = s;
+    paintSeg($('scaleAsia'), s === 'asia', true);
+    paintSeg($('scaleStd'), s === 'standard', false);
+    calculate(false);
+  }
+
+  function readInputs() {
+    if (unitSystem === 'metric') {
+      return { weightKg: parseFloat($('weightKg').value), heightCm: parseFloat($('heightCm').value) };
+    }
+    const ft = parseFloat($('heightFt').value), inch = parseFloat($('heightIn').value), lb = parseFloat($('weightLb').value);
+    if (!isFinite(ft) || !isFinite(inch) || !isFinite(lb)) return { weightKg: NaN, heightCm: NaN };
+    return imperialToMetric(ft, inch, lb);
+  }
+
+  function showError(msg) {
+    const el = $('inputError');
+    if (!msg) { el.classList.add('hidden'); return; }
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+  function hideError() { $('inputError').classList.add('hidden'); }
+
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveHistory(list) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function renderHistory() {
+    const list = loadHistory();
+    $('sparkline').innerHTML = sparklineMarkup(list.map(e => e.bmi).reverse());
+    const empty = list.length === 0;
+    $('historyEmpty').classList.toggle('hidden', !empty);
+    $('historyTable').classList.toggle('hidden', empty);
+    const body = $('historyBody');
+    body.innerHTML = '';
+    list.slice(0, 10).forEach(e => {
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-teal-50';
+      const dot = '<span class="inline-block w-2.5 h-2.5 rounded-full mr-2" style="background:' + e.color + '"></span>';
+      tr.innerHTML = '<td class="py-2 pr-3 text-slate-500 whitespace-nowrap">' + formatDate(e.date) + '</td>' +
+        '<td class="py-2 pr-3 font-extrabold text-slate-900">' + e.bmi.toFixed(1) + '</td>' +
+        '<td class="py-2 pr-3 font-semibold text-slate-600">' + dot + e.category + '</td>' +
+        '<td class="py-2 text-xs text-slate-400">' + e.scaleName + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function anyFieldFilled() {
+    return ['heightCm','weightKg','heightFt','heightIn','weightLb'].some(id => $(id).value.trim() !== '');
+  }
+
+  function calculate(saveEntry) {
+    if (!anyFieldFilled()) { hideError(); return; }
+    const { weightKg, heightCm } = readInputs();
+    const err = validateInputs(weightKg, heightCm);
+    showError(err);
+    if (err) { return; }
+    const bmi = calcBMI(weightKg, heightCm);
+    const cls = classifyBMI(bmi, scaleKey);
+    const clsStd = classifyBMI(bmi, 'standard');
+    const clsAsia = classifyBMI(bmi, 'asia');
+    const range = healthyWeightRange(heightCm, scaleKey);
+    const gap = weightGap(weightKg, heightCm, scaleKey);
+
+    $('resultEmpty').classList.add('hidden');
+    $('resultBox').classList.remove('hidden');
+    $('bmiValue').textContent = bmi.toFixed(1);
+    $('bmiValue').style.color = cls.color;
+    const chip = $('bmiCategory');
+    chip.textContent = cls.label + '  •  ' + cls.scale;
+    chip.style.background = cls.color;
+    $('bmiAdvice').textContent = cls.advice;
+    $('bmiMarker').style.left = 'calc(' + gaugePercent(bmi).toFixed(1) + '% - 3px)';
+    $('gaugeMid').textContent = scaleKey === 'asia' ? 'Normal: 18.5 – 22.9' : 'Normal: 18.5 – 24.9';
+    $('catAsia').textContent = clsAsia.label;
+    $('catStd').textContent = clsStd.label;
+    $('healthyRange').textContent = range.min.toFixed(1) + ' kg – ' + range.max.toFixed(1) + ' kg';
+    $('gainLose').textContent =
+      gap.direction === 'maintain' ? 'You are inside your healthy range — great work staying there.' :
+      gap.direction === 'lose' ? 'About ' + gap.kg.toFixed(1) + ' kg to lose to reach your healthy range.' :
+      'About ' + gap.kg.toFixed(1) + ' kg to gain to reach your healthy range.';
+
+    if (saveEntry !== false) {
+      const entry = {
+        date: new Date().toISOString(),
+        bmi: Math.round(bmi * 10) / 10,
+        weightKg: Math.round(weightKg * 10) / 10,
+        heightCm: Math.round(heightCm * 10) / 10,
+        category: cls.label, color: cls.color, scaleName: cls.scale
+      };
+      saveHistory(addHistoryEntry(loadHistory(), entry, 50));
+      renderHistory();
+    }
+  }
+
+  $('unitMetric').addEventListener('click', () => setUnits('metric'));
+  $('unitImperial').addEventListener('click', () => setUnits('imperial'));
+  $('scaleAsia').addEventListener('click', () => setScale('asia'));
+  $('scaleStd').addEventListener('click', () => setScale('standard'));
+  $('calcBtn').addEventListener('click', () => calculate(true));
+  ['heightCm','weightKg','heightFt','heightIn','weightLb'].forEach(id => {
+    $(id).addEventListener('keydown', e => { if (e.key === 'Enter') calculate(true); });
+  });
+  $('resetBtn').addEventListener('click', () => {
+    ['heightCm','weightKg','heightFt','heightIn','weightLb'].forEach(id => { $(id).value = ''; });
+    hideError();
+    $('resultBox').classList.add('hidden');
+    $('resultEmpty').classList.remove('hidden');
+  });
+  $('csvBtn').addEventListener('click', () => {
+    const list = loadHistory();
+    if (!list.length) { alert('No history to download yet. Calculate your BMI first.'); return; }
+    const blob = new Blob([historyToCSV(list)], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'vitascale-bmi-history.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  $('clearBtn').addEventListener('click', () => {
+    if (confirm('Delete your saved BMI history from this browser?')) {
+      saveHistory([]); renderHistory();
+    }
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
+  setUnits('metric');
+  setScale('asia');
+  renderHistory();
+})();
+</script>
+</body>
+</html>
